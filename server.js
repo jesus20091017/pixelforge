@@ -18,7 +18,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Si NO quieres renombrar tu archivo, usa esto:
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "práctica.html"));
+    res.sendFile(path.join(__dirname, "public", "practica.html"));
 });
 
 // ===== MONGO =====
