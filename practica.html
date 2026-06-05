@@ -1,0 +1,715 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIXELFORGE — Gaming Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --acid: #BFFF00;
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --surface3: #222222;
+    --border: #2a2a2a;
+    --text: #f0f0f0;
+    --text-muted: #777;
+    --danger: #ff3b3b;
+    --cyan: #00e5ff;
+    --gold: #ffd700;
+    --card-radius: 12px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--acid); border-radius: 3px; }
+
+  /* NAV */
+  nav { position: sticky; top: 0; z-index: 100; background: rgba(10,10,10,0.92); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 32px; height: 64px; display: flex; align-items: center; gap: 24px; }
+  .logo { font-family: 'Orbitron', monospace; font-weight: 900; font-size: 20px; letter-spacing: 2px; white-space: nowrap; text-decoration: none; }
+  .logo span:first-child { color: var(--acid); }
+  .logo span:last-child { color: var(--text); }
+  .nav-links { display: flex; gap: 4px; list-style: none; }
+  .nav-links a { color: var(--text-muted); text-decoration: none; font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; padding: 6px 14px; border-radius: 6px; transition: all .2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--acid); background: rgba(191,255,0,0.07); }
+  .search-bar { flex: 1; max-width: 400px; position: relative; }
+  .search-bar input { width: 100%; padding: 9px 16px 9px 40px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; transition: border-color .2s, box-shadow .2s; }
+  .search-bar input:focus { border-color: var(--acid); box-shadow: 0 0 0 3px rgba(191,255,0,0.1); }
+  .search-bar input::placeholder { color: var(--text-muted); }
+  .search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 15px; pointer-events: none; }
+  #searchResults { position: absolute; top: calc(100% + 8px); left: 0; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; display: none; z-index: 200; box-shadow: 0 16px 48px rgba(0,0,0,0.6); }
+  .search-result-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; cursor: pointer; transition: background .15s; border-bottom: 1px solid var(--border); }
+  .search-result-item:last-child { border-bottom: none; }
+  .search-result-item:hover { background: var(--surface2); }
+  .search-result-item img { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; }
+  .sri-info { flex: 1; }
+  .sri-name { font-size: 13px; font-weight: 500; }
+  .sri-price { font-size: 12px; color: var(--acid); font-family: 'Rajdhani', sans-serif; font-weight: 700; }
+  .nav-right { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 8px; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all .2s; border: none; text-decoration: none; }
+  .btn-acid { background: var(--acid); color: #000; }
+  .btn-acid:hover { background: #d4ff26; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(191,255,0,0.35); }
+  .btn-icon { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 9px 12px; border-radius: 8px; cursor: pointer; font-size: 16px; transition: all .2s; position: relative; }
+  .btn-icon:hover { border-color: var(--acid); color: var(--acid); }
+  .cart-badge { position: absolute; top: -6px; right: -6px; background: var(--acid); color: #000; font-size: 10px; font-weight: 700; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron', monospace; }
+
+  /* HERO */
+  .hero { position: relative; overflow: hidden; }
+  .carousel-track { display: flex; transition: transform .5s cubic-bezier(.77,0,.18,1); }
+  .slide { min-width: 100%; height: 480px; position: relative; display: flex; align-items: flex-end; padding: 60px 72px; flex-direction: column; justify-content: center; align-items: flex-start; }
+  .slide::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.85) 0%, rgba(0,0,0,0.3) 60%, transparent 100%); }
+  .slide-bg { position: absolute; inset: 0; background-size: cover; background-position: center; transition: transform 8s ease; }
+  .slide:hover .slide-bg { transform: scale(1.04); }
+  .slide-content { position: relative; z-index: 2; }
+  .slide-tag { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--acid); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .slide-tag::before { content: ''; display: inline-block; width: 24px; height: 2px; background: var(--acid); }
+  .slide-title { font-family: 'Orbitron', monospace; font-weight: 900; font-size: clamp(32px, 5vw, 56px); line-height: 1.05; margin-bottom: 16px; text-shadow: 0 2px 24px rgba(0,0,0,0.5); }
+  .slide-desc { color: rgba(240,240,240,0.75); font-size: 15px; max-width: 440px; margin-bottom: 28px; line-height: 1.6; }
+  .slide-price { font-family: 'Orbitron', monospace; font-size: 28px; font-weight: 700; color: var(--acid); margin-bottom: 24px; }
+  .carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); border: 1px solid var(--border); color: var(--text); width: 44px; height: 44px; border-radius: 50%; cursor: pointer; z-index: 10; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all .2s; backdrop-filter: blur(8px); }
+  .carousel-btn:hover { background: var(--acid); color: #000; border-color: var(--acid); }
+  .carousel-btn.prev { left: 20px; }
+  .carousel-btn.next { right: 20px; }
+  .carousel-dots { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: all .3s; }
+  .dot.active { background: var(--acid); width: 24px; border-radius: 4px; }
+
+  /* SECTIONS */
+  .container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+  section { padding: 64px 0; }
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+  .section-title { font-family: 'Orbitron', monospace; font-weight: 700; font-size: 22px; letter-spacing: 2px; display: flex; align-items: center; gap: 12px; }
+  .section-title::before { content: ''; display: block; width: 4px; height: 24px; background: var(--acid); border-radius: 2px; }
+  .section-controls { display: flex; gap: 8px; }
+  .ctrl-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text); width: 36px; height: 36px; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+  .ctrl-btn:hover { border-color: var(--acid); color: var(--acid); }
+
+  /* GRID */
+  .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+  .product-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; cursor: pointer; transition: all .25s; position: relative; }
+  .product-card:hover { border-color: var(--acid); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(191,255,0,0.12); }
+  .card-img-wrap { position: relative; overflow: hidden; aspect-ratio: 1/1; }
+  .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+  .product-card:hover .card-img-wrap img { transform: scale(1.08); }
+  .card-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%); opacity: 0; transition: opacity .25s; display: flex; align-items: flex-end; justify-content: center; padding: 16px; }
+  .product-card:hover .card-overlay { opacity: 1; }
+  .card-quick-add { background: var(--acid); color: #000; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; width: 100%; }
+  .card-badge { position: absolute; top: 10px; left: 10px; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; }
+  .card-badge.new { background: var(--cyan); color: #000; }
+  .card-badge.sale { background: var(--danger); color: #fff; }
+  .card-body { padding: 14px 16px 16px; }
+  .card-genre { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; font-family: 'Rajdhani', sans-serif; font-weight: 600; margin-bottom: 6px; }
+  .card-name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 16px; line-height: 1.3; margin-bottom: 8px; }
+  .card-footer { display: flex; justify-content: space-between; align-items: center; }
+  .card-price { font-family: 'Orbitron', monospace; font-weight: 700; font-size: 17px; color: var(--acid); }
+  .card-original { font-size: 12px; color: var(--text-muted); text-decoration: line-through; }
+  .card-rating { display: flex; gap: 2px; align-items: center; }
+  .star { color: var(--gold); font-size: 11px; }
+  .rating-count { font-size: 11px; color: var(--text-muted); margin-left: 4px; }
+
+  /* FILTERS */
+  .filters-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
+  .filter-chip { padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface2); color: var(--text-muted); font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 13px; cursor: pointer; transition: all .2s; }
+  .filter-chip:hover, .filter-chip.active { background: rgba(191,255,0,0.1); border-color: var(--acid); color: var(--acid); }
+
+  /* CART */
+  .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; opacity: 0; pointer-events: none; transition: opacity .3s; backdrop-filter: blur(4px); }
+  .cart-overlay.open { opacity: 1; pointer-events: all; }
+  .cart-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 380px; max-width: 100vw; background: var(--surface); border-left: 1px solid var(--border); z-index: 400; transform: translateX(100%); transition: transform .35s cubic-bezier(.77,0,.18,1); display: flex; flex-direction: column; }
+  .cart-drawer.open { transform: translateX(0); }
+  .cart-header { padding: 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .cart-header h2 { font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 700; }
+  .cart-close { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; }
+  .cart-close:hover { color: var(--text); }
+  .cart-items { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .cart-item { display: flex; gap: 12px; align-items: center; background: var(--surface2); border-radius: 10px; padding: 12px; border: 1px solid var(--border); }
+  .cart-item img { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; }
+  .ci-info { flex: 1; }
+  .ci-name { font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 14px; }
+  .ci-price { color: var(--acid); font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 700; margin-top: 2px; }
+  .ci-remove { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; }
+  .ci-remove:hover { color: var(--danger); }
+  .cart-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: var(--text-muted); padding: 48px; text-align: center; }
+  .cart-empty .empty-icon { font-size: 48px; opacity: 0.4; }
+  .cart-footer { padding: 20px 24px; border-top: 1px solid var(--border); }
+  .cart-total { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .cart-total span:last-child { font-family: 'Orbitron', monospace; font-size: 22px; font-weight: 700; color: var(--acid); }
+
+  /* TOAST */
+  #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 500; display: flex; flex-direction: column; gap: 8px; }
+  .toast { background: var(--surface); border: 1px solid var(--acid); border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; min-width: 260px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); animation: slideUp .3s ease forwards; }
+  .toast.removing { animation: slideOut .3s ease forwards; }
+  @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes slideOut { from { opacity:1; } to { opacity:0; transform:translateY(16px); } }
+
+  /* MONGO PANEL */
+  .mongo-toggle { position: fixed; bottom: 24px; left: 24px; z-index: 499; background: #166534; border: 1px solid #15803d; color: #4ade80; border-radius: 50%; width: 48px; height: 48px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(22,101,52,0.4); transition: all .2s; }
+  .mongo-toggle:hover { background: #15803d; transform: scale(1.05); }
+  .mongo-panel { position: fixed; bottom: 84px; left: 24px; z-index: 500; width: 400px; max-width: calc(100vw - 48px); background: var(--surface); border: 1px solid #2a4a1a; border-radius: 14px; box-shadow: 0 16px 48px rgba(0,0,0,0.5); overflow: hidden; transform: translateY(20px) scale(0.95); opacity: 0; pointer-events: none; transition: all .3s cubic-bezier(.77,0,.18,1); }
+  .mongo-panel.open { transform: translateY(0) scale(1); opacity: 1; pointer-events: all; }
+  .mongo-header { padding: 14px 18px; background: #0d1f0d; border-bottom: 1px solid #2a4a1a; display: flex; justify-content: space-between; align-items: center; }
+  .mongo-title { font-family: 'Orbitron', monospace; font-size: 12px; color: #4ade80; font-weight: 700; letter-spacing: 1.5px; display: flex; align-items: center; gap: 8px; }
+  .mongo-dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .mongo-close-btn { background: none; border: none; color: #4ade80; cursor: pointer; font-size: 16px; padding: 0; line-height: 1; }
+  .mongo-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .mongo-field { display: flex; flex-direction: column; gap: 4px; }
+  .mongo-label { font-size: 11px; color: #4ade80; font-family: 'Rajdhani', sans-serif; letter-spacing: 1px; font-weight: 600; text-transform: uppercase; }
+  .mongo-input { background: #0d1f0d; border: 1px solid #2a4a1a; color: #a3e635; border-radius: 6px; padding: 8px 12px; font-family: 'Inter', monospace; font-size: 13px; outline: none; transition: border-color .2s; width: 100%; }
+  .mongo-input:focus { border-color: #4ade80; }
+  .mongo-input::placeholder { color: #2a5a2a; }
+  textarea.mongo-input { resize: vertical; line-height: 1.5; }
+  .mongo-row { display: flex; gap: 8px; }
+  .mongo-row .mongo-field { flex: 1; }
+  .mongo-btn { background: #166534; border: 1px solid #15803d; color: #4ade80; border-radius: 6px; padding: 10px; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 1px; cursor: pointer; transition: all .2s; width: 100%; text-transform: uppercase; }
+  .mongo-btn:hover { background: #15803d; }
+  .mongo-status { font-family: 'Inter', monospace; font-size: 11px; padding: 8px 12px; border-radius: 6px; background: #0d1f0d; border: 1px solid #2a4a1a; color: #4ade80; white-space: pre-wrap; overflow-x: auto; max-height: 120px; overflow-y: auto; line-height: 1.5; }
+  .mongo-tabs { display: flex; gap: 4px; }
+  .mongo-tab { flex: 1; padding: 7px; text-align: center; background: #0d1f0d; border: 1px solid #2a4a1a; color: #2a5a2a; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; border-radius: 6px; transition: all .2s; }
+  .mongo-tab.active { background: #166534; border-color: #15803d; color: #4ade80; }
+
+  /* NO RESULTS */
+  .no-results { text-align: center; padding: 80px 0; color: var(--text-muted); grid-column: 1/-1; }
+  .no-results .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+
+  footer { border-top: 1px solid var(--border); padding: 40px 32px; text-align: center; color: var(--text-muted); font-size: 13px; }
+  footer strong { color: var(--acid); font-family: 'Orbitron', monospace; }
+
+  @media (max-width: 768px) {
+    nav { padding: 0 16px; }
+    .nav-links { display: none; }
+    .slide { padding: 40px 24px; height: 360px; }
+    .container { padding: 0 16px; }
+    section { padding: 40px 0; }
+    .mongo-panel { left: 12px; right: 12px; width: auto; }
+    .mongo-toggle { left: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#"><span>PIXEL</span><span>FORGE</span></a>
+  <ul class="nav-links">
+    <li><a href="#" class="active">Store</a></li>
+    <li><a href="#">New Releases</a></li>
+    <li><a href="#">Trending</a></li>
+    <li><a href="#">Deals</a></li>
+  </ul>
+  <div class="search-bar">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Search games..." autocomplete="off">
+    <div id="searchResults"></div>
+  </div>
+  <div class="nav-right">
+    <button class="btn-icon" onclick="toggleWishlist()" title="Wishlist">♡</button>
+    <button class="btn-icon" onclick="openCart()" title="Cart">
+      🛒<span class="cart-badge" id="cartBadge" style="display:none">0</span>
+    </button>
+    <button class="btn btn-acid" onclick="showToast('🎮','Logging in...')">Sign In</button>
+  </div>
+</nav>
+
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <h2>🛒 Your Cart</h2>
+    <button class="cart-close" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty"><div class="empty-icon">🎮</div><p>Your cart is empty.</p></div>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-total"><span>Total</span><span id="cartTotal">$0.00</span></div>
+    <button class="btn btn-acid" style="width:100%;justify-content:center" onclick="checkout()">Checkout →</button>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="carousel-track" id="carousel">
+    <div class="slide">
+      <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1400&q=80')"></div>
+      <div class="slide-content">
+        <div class="slide-tag">Featured Game</div>
+        <div class="slide-title">Black Myth<br>Wukong</div>
+        <div class="slide-desc">Epic journey rooted in Chinese mythology. Action RPG that pushes the boundaries of gaming.</div>
+        <div class="slide-price">$59.99</div>
+        <button class="btn btn-acid" onclick="addToCartById(0)">Buy Now →</button>
+      </div>
+    </div>
+    <div class="slide">
+      <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1400&q=80')"></div>
+      <div class="slide-content">
+        <div class="slide-tag">Hot Deal — 40% OFF</div>
+        <div class="slide-title">Elden Ring</div>
+        <div class="slide-desc">Critically acclaimed open world action RPG. Explore a vast world full of mystery and peril.</div>
+        <div class="slide-price">$35.99 <small style="font-size:16px;color:#555;text-decoration:line-through">$59.99</small></div>
+        <button class="btn btn-acid" onclick="addToCartById(1)">Buy Now →</button>
+      </div>
+    </div>
+    <div class="slide">
+      <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=1400&q=80')"></div>
+      <div class="slide-content">
+        <div class="slide-tag">New Release</div>
+        <div class="slide-title">Cyberpunk<br>2077</div>
+        <div class="slide-desc">An open-world adventure set in a megalopolis obsessed with power, glamour and body modification.</div>
+        <div class="slide-price">$49.99</div>
+        <button class="btn btn-acid" onclick="addToCartById(2)">Buy Now →</button>
+      </div>
+    </div>
+  </div>
+  <button class="carousel-btn prev" onclick="prevSlide()">‹</button>
+  <button class="carousel-btn next" onclick="nextSlide()">›</button>
+  <div class="carousel-dots" id="carouselDots"></div>
+</div>
+
+<div class="container">
+  <section>
+    <div class="section-header">
+      <div class="section-title">New Arrivals</div>
+      <div class="section-controls">
+        <button class="ctrl-btn" onclick="loadProducts()" title="Refresh">↺</button>
+      </div>
+    </div>
+    <div class="filters-bar" id="filtersBar">
+      <button class="filter-chip active" data-filter="all" onclick="filterProducts(this)">All Games</button>
+      <button class="filter-chip" data-filter="Action" onclick="filterProducts(this)">Action</button>
+      <button class="filter-chip" data-filter="RPG" onclick="filterProducts(this)">RPG</button>
+      <button class="filter-chip" data-filter="Strategy" onclick="filterProducts(this)">Strategy</button>
+      <button class="filter-chip" data-filter="Horror" onclick="filterProducts(this)">Horror</button>
+      <button class="filter-chip" data-filter="Sports" onclick="filterProducts(this)">Sports</button>
+      <button class="filter-chip" data-filter="Simulation" onclick="filterProducts(this)">Simulation</button>
+    </div>
+    <div class="products-grid" id="productsGrid"></div>
+  </section>
+</div>
+
+<div id="toast-container"></div>
+
+<!-- MongoDB Toggle -->
+<button class="mongo-toggle" onclick="toggleMongoPanel()" title="MongoDB Connector">🍃</button>
+
+<!-- MongoDB Panel -->
+<div class="mongo-panel" id="mongoPanel">
+  <div class="mongo-header">
+    <div class="mongo-title"><div class="mongo-dot"></div>🍃 MongoDB Connector</div>
+    <button class="mongo-close-btn" onclick="toggleMongoPanel()">✕</button>
+  </div>
+  <div class="mongo-body">
+    <div class="mongo-tabs">
+      <button class="mongo-tab active" data-tab="connect" onclick="switchMongoTab(this)">Connect</button>
+      <button class="mongo-tab" data-tab="query" onclick="switchMongoTab(this)">Query</button>
+      <button class="mongo-tab" data-tab="insert" onclick="switchMongoTab(this)">Insert</button>
+      <button class="mongo-tab" data-tab="delete" onclick="switchMongoTab(this)">Delete</button>
+    </div>
+
+    <div id="tab-connect" class="tab-content">
+      <div class="mongo-field">
+        <div class="mongo-label">Connection URI</div>
+        <input class="mongo-input" id="mongoUri" placeholder="mongodb+srv://user:pass@cluster.mongodb.net" type="password">
+      </div>
+      <div class="mongo-row">
+        <div class="mongo-field">
+          <div class="mongo-label">Database</div>
+          <input class="mongo-input" id="mongoDb" placeholder="pixelforge" value="pixelforge">
+        </div>
+        <div class="mongo-field">
+          <div class="mongo-label">Collection</div>
+          <input class="mongo-input" id="mongoCol" placeholder="products" value="products">
+        </div>
+      </div>
+      <button class="mongo-btn" onclick="testConnection()">▶ Test Connection</button>
+      <div class="mongo-status" id="mongoStatus">// Backend configurado: http://localhost:3000
+//
+// Endpoint activo: /producto
+// Los productos se cargan automáticamente al abrir.
+//
+// Presiona ▶ Test Connection para verificar.</div>
+    </div>
+
+    <div id="tab-query" class="tab-content" style="display:none">
+      <div class="mongo-field">
+        <div class="mongo-label">Filter (JSON)</div>
+        <input class="mongo-input" id="mongoFilter" placeholder='{"genre": "RPG"}' value="{}">
+      </div>
+      <div class="mongo-row">
+        <div class="mongo-field">
+          <div class="mongo-label">Limit</div>
+          <input class="mongo-input" id="mongoLimit" value="20" type="number">
+        </div>
+        <div class="mongo-field">
+          <div class="mongo-label">Sort Field</div>
+          <input class="mongo-input" id="mongoSort" placeholder="price">
+        </div>
+      </div>
+      <button class="mongo-btn" onclick="fetchFromMongo()">▶ Fetch Products</button>
+      <div class="mongo-status" id="queryStatus">// Run a query to see results...</div>
+    </div>
+
+    <div id="tab-insert" class="tab-content" style="display:none">
+      <div class="mongo-field">
+        <div class="mongo-label">Document (JSON)</div>
+        <textarea class="mongo-input" id="mongoDoc" rows="5" placeholder='{"name":"My Game","price":49.99,"genre":"Action","rating":4.5}'></textarea>
+      </div>
+      <button class="mongo-btn" onclick="insertToMongo()">▶ Insert Document</button>
+      <div class="mongo-status" id="insertStatus">// Output will appear here...</div>
+    </div>
+
+    <div id="tab-delete" class="tab-content" style="display:none">
+      <div class="mongo-field">
+        <div class="mongo-label">ID del Producto</div>
+        <input class="mongo-input" id="mongoDeleteId" placeholder="Ej: 507f1f77bcf86cd799439011">
+      </div>
+      <button class="mongo-btn" style="background:#4a1a1a;border-color:#7a2a2a;color:#f87171" onclick="deleteFromMongo(document.getElementById('mongoDeleteId').value.trim())">▶ Delete Producto</button>
+      <div class="mongo-status" id="deleteStatus">// Ingresa un _id para eliminar...</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Built with ❤️ on <strong>PIXELFORGE</strong> — Connect your MongoDB via the 🍃 panel
+</footer>
+
+<script>
+const CATALOG = [
+  {id:0,  name:"Black Myth: Wukong", genre:"Action",     price:59.99,              rating:4.9, reviews:12840, badge:"new",  img:"https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&q=80"},
+  {id:1,  name:"Elden Ring",         genre:"RPG",        price:35.99, orig:59.99,  rating:4.8, reviews:98200, badge:"sale", img:"https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&q=80"},
+  {id:2,  name:"Cyberpunk 2077",     genre:"Action",     price:49.99,              rating:4.5, reviews:54300, badge:null,   img:"https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=400&q=80"},
+  {id:3,  name:"Baldur's Gate 3",    genre:"RPG",        price:59.99,              rating:5.0, reviews:87600, badge:"new",  img:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80"},
+  {id:4,  name:"Civilization VII",   genre:"Strategy",   price:69.99,              rating:4.6, reviews:23100, badge:"new",  img:"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=80"},
+  {id:5,  name:"Resident Evil 4",    genre:"Horror",     price:39.99,              rating:4.7, reviews:44200, badge:null,   img:"https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?w=400&q=80"},
+  {id:6,  name:"EA FC 25",           genre:"Sports",     price:69.99,              rating:4.2, reviews:31500, badge:null,   img:"https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=400&q=80"},
+  {id:7,  name:"Cities: Skylines 2", genre:"Simulation", price:44.99, orig:59.99,  rating:4.0, reviews:18900, badge:"sale", img:"https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=400&q=80"},
+  {id:8,  name:"Hades II",           genre:"Action",     price:29.99,              rating:4.9, reviews:67800, badge:"new",  img:"https://images.unsplash.com/photo-1500964757637-c85e8a162699?w=400&q=80"},
+  {id:9,  name:"Star Wars Outlaws",  genre:"Action",     price:69.99,              rating:4.3, reviews:11200, badge:null,   img:"https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=400&q=80"},
+  {id:10, name:"Manor Lords",        genre:"Strategy",   price:39.99, orig:49.99,  rating:4.4, reviews:29300, badge:"sale", img:"https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&q=80"},
+  {id:11, name:"Silent Hill 2",      genre:"Horror",     price:49.99,              rating:4.8, reviews:35600, badge:"new",  img:"https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&q=80"},
+];
+
+// ── MONGO CONFIG ── Backend conectado a MongoDB
+const MONGO_CONFIG = {
+  apiEndpoint: "http://localhost:3000",
+  atlasApiKey: null,
+  atlasUrl: null,
+};
+
+let cart = [], currentFilter = "all", displayedProducts = [...CATALOG];
+let slideIndex = 0, mongoPanelOpen = false, mongoConnected = false;
+
+// CAROUSEL
+const dotsEl = document.getElementById('carouselDots');
+for(let i=0;i<3;i++){
+  const d=document.createElement('div');
+  d.className='dot'+(i===0?' active':'');
+  d.onclick=()=>goSlide(i);
+  dotsEl.appendChild(d);
+}
+function goSlide(i){
+  slideIndex=(i+3)%3;
+  document.getElementById('carousel').style.transform=`translateX(-${slideIndex*100}%)`;
+  document.querySelectorAll('.dot').forEach((d,idx)=>d.classList.toggle('active',idx===slideIndex));
+}
+function nextSlide(){goSlide(slideIndex+1);}
+function prevSlide(){goSlide(slideIndex-1);}
+setInterval(()=>goSlide(slideIndex+1),5500);
+
+// PRODUCTS
+function renderProducts(list){
+  const g=document.getElementById('productsGrid');
+  if(!list.length){
+    g.innerHTML='<div class="no-results"><div class="icon">🎮</div><p>No games found.</p></div>';
+    return;
+  }
+  g.innerHTML=list.map(p=>`
+    <div class="product-card" onclick="viewProduct(${p.id})">
+      <div class="card-img-wrap">
+        <img src="${p.img}" alt="${p.name}" loading="lazy">
+        <div class="card-overlay">
+          <button class="card-quick-add" onclick="event.stopPropagation();addToCartById(${p.id})">Add to Cart</button>
+        </div>
+        ${p.badge?`<div class="card-badge ${p.badge}">${p.badge==='new'?'NEW':'SALE'}</div>`:''}
+      </div>
+      <div class="card-body">
+        <div class="card-genre">${p.genre}</div>
+        <div class="card-name">${p.name}</div>
+        <div class="card-footer">
+          <div>
+            <div class="card-price">$${Number(p.price).toFixed(2)}</div>
+            ${p.orig?`<div class="card-original">$${p.orig.toFixed(2)}</div>`:''}
+          </div>
+          <div class="card-rating">
+            ${'★'.repeat(Math.round(p.rating))}${'☆'.repeat(5-Math.round(p.rating))}
+            <span class="rating-count">(${p.reviews>999?(p.reviews/1000).toFixed(1)+'k':p.reviews})</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+function loadProducts(){renderProducts(displayedProducts);}
+loadProducts();
+
+// Carga automática desde el backend al iniciar
+async function loadFromBackend(){
+  if(!MONGO_CONFIG.apiEndpoint) return;
+  try {
+    const r = await fetch(`${MONGO_CONFIG.apiEndpoint}/producto`);
+    if(!r.ok) return;
+    const data = await r.json();
+    if(Array.isArray(data) && data.length){
+      const mapped = data.map((p,i)=>({
+        id: p._id || p.id || 1000+i,
+        name: p.name || p.nombre || 'Sin nombre',
+        genre: p.genre || p.genero || p.categoria || 'Other',
+        price: parseFloat(p.price || p.precio) || 0,
+        orig: p.orig || p.precioOriginal || null,
+        rating: parseFloat(p.rating) || 4.0,
+        reviews: parseInt(p.reviews || p.resenas) || 0,
+        badge: p.badge || null,
+        img: p.img || p.image || p.imagen || 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&q=80'
+      }));
+      // Reemplazar catálogo con datos del backend
+      CATALOG.length = 0;
+      mapped.forEach(p => CATALOG.push(p));
+      displayedProducts = [...CATALOG];
+      renderProducts(displayedProducts);
+      mongoConnected = true;
+      showToast('🍃', `${mapped.length} productos cargados del backend`);
+    }
+  } catch(e) {
+    console.warn('Backend no disponible, usando catálogo local.', e.message);
+  }
+}
+loadFromBackend();
+
+// Eliminar producto del backend
+async function deleteFromMongo(id){
+  const st = document.getElementById('deleteStatus');
+  if(!id){ st.textContent='// ❌ Ingresa un ID válido'; return; }
+  if(!MONGO_CONFIG.apiEndpoint){ st.textContent='// ❌ No hay backend configurado'; return; }
+  st.textContent='// Eliminando...';
+  try {
+    const r = await fetch(`${MONGO_CONFIG.apiEndpoint}/producto/${id}`, { method: 'DELETE' });
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const idx = CATALOG.findIndex(p => String(p.id) === String(id));
+    if(idx !== -1) CATALOG.splice(idx, 1);
+    displayedProducts = displayedProducts.filter(p => String(p.id) !== String(id));
+    renderProducts(displayedProducts);
+    st.textContent=`// ✅ Producto eliminado\n// id: ${id}`;
+    showToast('🗑️', 'Producto eliminado');
+  } catch(e) {
+    st.textContent=`// ❌ Error: ${e.message}`;
+    showToast('❌', `Error al eliminar: ${e.message}`);
+  }
+}
+
+function filterProducts(btn){
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter=btn.dataset.filter;
+  applyFilters();
+}
+function applyFilters(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  displayedProducts=CATALOG.filter(p=>{
+    const mf=currentFilter==='all'||p.genre===currentFilter;
+    return mf&&(!q||p.name.toLowerCase().includes(q));
+  });
+  renderProducts(displayedProducts);
+}
+
+// SEARCH
+const si=document.getElementById('searchInput');
+const sr=document.getElementById('searchResults');
+si.addEventListener('input',function(){
+  applyFilters();
+  const q=this.value.toLowerCase().trim();
+  if(!q){sr.style.display='none';return;}
+  const hits=CATALOG.filter(p=>p.name.toLowerCase().includes(q)).slice(0,5);
+  if(!hits.length){sr.style.display='none';return;}
+  sr.innerHTML=hits.map(p=>`
+    <div class="search-result-item" onclick="addToCartById(${p.id});closeSearch()">
+      <img src="${p.img}" alt="${p.name}">
+      <div class="sri-info"><div class="sri-name">${p.name}</div><div class="sri-price">$${p.price.toFixed(2)}</div></div>
+      <span style="font-size:11px;color:#555">Add →</span>
+    </div>
+  `).join('');
+  sr.style.display='block';
+});
+function closeSearch(){sr.style.display='none';}
+document.addEventListener('click',e=>{if(!e.target.closest('.search-bar'))closeSearch();});
+
+// CART
+function openCart(){document.getElementById('cartDrawer').classList.add('open');document.getElementById('cartOverlay').classList.add('open');}
+function closeCart(){document.getElementById('cartDrawer').classList.remove('open');document.getElementById('cartOverlay').classList.remove('open');}
+function addToCartById(id){
+  const p=CATALOG.find(x=>x.id===id)||displayedProducts.find(x=>x.id===id);
+  if(!p)return;
+  const ex=cart.find(c=>c.id===p.id);
+  if(ex){ex.qty++;}else{cart.push({...p,qty:1});}
+  updateCart();
+  showToast('🎮',`${p.name} added!`);
+}
+function removeFromCart(id){cart=cart.filter(c=>c.id!==id);updateCart();}
+function updateCart(){
+  const badge=document.getElementById('cartBadge');
+  const total=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const count=cart.reduce((s,c)=>s+c.qty,0);
+  badge.textContent=count;
+  badge.style.display=count>0?'flex':'none';
+  document.getElementById('cartTotal').textContent=`$${total.toFixed(2)}`;
+  const el=document.getElementById('cartItems');
+  if(!cart.length){el.innerHTML='<div class="cart-empty"><div class="empty-icon">🎮</div><p>Your cart is empty.</p></div>';return;}
+  el.innerHTML=cart.map(c=>`
+    <div class="cart-item">
+      <img src="${c.img}" alt="${c.name}">
+      <div class="ci-info">
+        <div class="ci-name">${c.name}${c.qty>1?` <span style="color:#555">×${c.qty}</span>`:''}</div>
+        <div class="ci-price">$${(c.price*c.qty).toFixed(2)}</div>
+      </div>
+      <button class="ci-remove" onclick="removeFromCart(${c.id})">✕</button>
+    </div>
+  `).join('');
+}
+function checkout(){
+  if(!cart.length){showToast('⚠️','Cart is empty!');return;}
+  const total=cart.reduce((s,c)=>s+c.price*c.qty,0).toFixed(2);
+  showToast('✅',`Order placed! $${total}`);
+  cart=[];updateCart();closeCart();
+}
+function viewProduct(id){const p=CATALOG.find(x=>x.id===id);if(p)showToast('👁️',`Viewing: ${p.name}`);}
+function toggleWishlist(){showToast('♡','Wishlist coming soon!');}
+
+// TOAST
+function showToast(icon,msg){
+  const tc=document.getElementById('toast-container');
+  const t=document.createElement('div');
+  t.className='toast';
+  t.innerHTML=`<span style="font-size:18px">${icon}</span><span style="font-size:13px;font-weight:500">${msg}</span>`;
+  tc.appendChild(t);
+  setTimeout(()=>{t.classList.add('removing');setTimeout(()=>t.remove(),300);},3000);
+}
+
+// MONGODB PANEL
+function toggleMongoPanel(){
+  mongoPanelOpen=!mongoPanelOpen;
+  document.getElementById('mongoPanel').classList.toggle('open',mongoPanelOpen);
+}
+function switchMongoTab(btn){
+  const tab=btn.dataset.tab;
+  document.querySelectorAll('.mongo-tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none');
+  document.getElementById('tab-'+tab).style.display='flex';
+  document.getElementById('tab-'+tab).style.flexDirection='column';
+  document.getElementById('tab-'+tab).style.gap='10px';
+}
+// Init tab display
+document.querySelectorAll('.tab-content').forEach((t,i)=>{
+  t.style.display=i===0?'flex':'none';
+  t.style.flexDirection='column';
+  t.style.gap='10px';
+});
+
+async function testConnection(){
+  const st=document.getElementById('mongoStatus');
+  const uri=document.getElementById('mongoUri').value.trim();
+  const db=document.getElementById('mongoDb').value.trim()||'pixelforge';
+  const col=document.getElementById('mongoCol').value.trim()||'products';
+  st.textContent='// Connecting...';
+  try {
+    if(MONGO_CONFIG.apiEndpoint){
+      const r=await fetch(`${MONGO_CONFIG.apiEndpoint}/health`);
+      const d=await r.json();
+      mongoConnected=true;
+      st.textContent=`// ✅ Connected via Backend API\n// Server: ${d.message||'OK'}\n// DB: ${db} / ${col}`;
+      showToast('🍃','MongoDB connected!');
+      return;
+    }
+    if(MONGO_CONFIG.atlasApiKey&&MONGO_CONFIG.atlasUrl){
+      const r=await fetch(`${MONGO_CONFIG.atlasUrl}/action/findOne`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','api-key':MONGO_CONFIG.atlasApiKey},
+        body:JSON.stringify({dataSource:'Cluster0',database:db,collection:col,filter:{}})
+      });
+      if(r.ok){
+        mongoConnected=true;
+        st.textContent=`// ✅ Connected via Atlas Data API\n// DB: ${db} / ${col}`;
+        showToast('🍃','Atlas connected!');
+        return;
+      }
+    }
+    await new Promise(r=>setTimeout(r,900));
+    mongoConnected=true;
+    st.textContent=`// ⚠️  DEMO MODE (no real DB)\n// To connect, edit MONGO_CONFIG in the script:\n//\n// Option A — Backend Express/FastAPI:\n//   apiEndpoint: 'http://localhost:3001/api'\n//\n// Option B — Atlas Data API:\n//   atlasApiKey: 'your-key'\n//   atlasUrl: 'https://data.mongodb-api.com/...'`;
+  } catch(e){
+    mongoConnected=false;
+    st.textContent=`// ❌ Failed: ${e.message}`;
+  }
+}
+
+async function fetchFromMongo(){
+  const st=document.getElementById('queryStatus');
+  const db=document.getElementById('mongoDb').value.trim()||'pixelforge';
+  const col=document.getElementById('mongoCol').value.trim()||'products';
+  let filter={},limit=20,sort=document.getElementById('mongoSort').value.trim();
+  try{filter=JSON.parse(document.getElementById('mongoFilter').value||'{}');}
+  catch(e){st.textContent=`// ❌ Invalid JSON: ${e.message}`;return;}
+  limit=parseInt(document.getElementById('mongoLimit').value)||20;
+  st.textContent='// Querying...';
+  try {
+    let results=[];
+    if(MONGO_CONFIG.apiEndpoint){
+      const r=await fetch(`${MONGO_CONFIG.apiEndpoint}/producto?filter=${encodeURIComponent(JSON.stringify(filter))}&limit=${limit}`);
+      results=await r.json();
+    } else if(MONGO_CONFIG.atlasApiKey&&MONGO_CONFIG.atlasUrl){
+      const body={dataSource:'Cluster0',database:db,collection:col,filter,limit};
+      if(sort)body.sort={[sort]:1};
+      const r=await fetch(`${MONGO_CONFIG.atlasUrl}/action/find`,{method:'POST',headers:{'Content-Type':'application/json','api-key':MONGO_CONFIG.atlasApiKey},body:JSON.stringify(body)});
+      const d=await r.json();results=d.documents||[];
+    } else {
+      results=CATALOG.filter(p=>Object.entries(filter).every(([k,v])=>String(p[k])===String(v))).slice(0,limit);
+      if(sort)results.sort((a,b)=>(a[sort]||0)-(b[sort]||0));
+    }
+    st.textContent=`// ✅ ${results.length} document(s)\n${JSON.stringify(results.slice(0,2),null,2)}${results.length>2?'\n// ...':''}`;
+    if(results.length){
+      const merged=results.map((p,i)=>({id:p._id||p.id||1000+i,name:p.name||p.title||'Unknown',genre:p.genre||'Other',price:parseFloat(p.price)||0,rating:p.rating||4.0,reviews:p.reviews||0,badge:p.badge||null,img:p.img||p.image||'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&q=80'}));
+      displayedProducts=merged;
+      renderProducts(displayedProducts);
+      showToast('🍃',`Loaded ${results.length} from DB`);
+    }
+  } catch(e){st.textContent=`// ❌ ${e.message}`;}
+}
+
+async function insertToMongo(){
+  const st=document.getElementById('insertStatus');
+  const db=document.getElementById('mongoDb').value.trim()||'pixelforge';
+  const col=document.getElementById('mongoCol').value.trim()||'products';
+  let doc={};
+  try{doc=JSON.parse(document.getElementById('mongoDoc').value||'{}');}
+  catch(e){st.textContent=`// ❌ Invalid JSON: ${e.message}`;return;}
+  if(!Object.keys(doc).length){st.textContent='// ❌ Empty document';return;}
+  st.textContent='// Inserting...';
+  try {
+    let id;
+    if(MONGO_CONFIG.apiEndpoint){
+      const r=await fetch(`${MONGO_CONFIG.apiEndpoint}/producto`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(doc)});
+      const d=await r.json();id=d._id||d.insertedId;
+    } else if(MONGO_CONFIG.atlasApiKey&&MONGO_CONFIG.atlasUrl){
+      const r=await fetch(`${MONGO_CONFIG.atlasUrl}/action/insertOne`,{method:'POST',headers:{'Content-Type':'application/json','api-key':MONGO_CONFIG.atlasApiKey},body:JSON.stringify({dataSource:'Cluster0',database:db,collection:col,document:doc})});
+      const d=await r.json();id=d.insertedId;
+    } else {
+      await new Promise(r=>setTimeout(r,500));
+      id='demo_'+Date.now();
+      const np={id:Date.now(),name:doc.name||'New Game',genre:doc.genre||'Other',price:parseFloat(doc.price)||0,rating:parseFloat(doc.rating)||4.0,reviews:0,badge:'new',img:doc.img||'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&q=80'};
+      CATALOG.push(np);displayedProducts.push(np);renderProducts(displayedProducts);
+    }
+    st.textContent=`// ✅ Inserted!\n// _id: ${id}\n${JSON.stringify(doc,null,2)}`;
+    showToast('🍃','Document inserted!');
+  } catch(e){st.textContent=`// ❌ ${e.message}`;}
+}
+</script>
+</body>
+</html>
