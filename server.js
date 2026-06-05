@@ -5,6 +5,9 @@ const cors = require("cors");
 const { MongoClient } = require("mongodb");
 
 const app = express();
+app.get("/", (req, res) => {
+  res.send("Servidor funcionando 🚀");
+});
 
 app.use(cors());
 app.use(express.json());
