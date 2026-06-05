@@ -389,9 +389,8 @@ const CATALOG = [
   {id:11, name:"Silent Hill 2",      genre:"Horror",     price:49.99,              rating:4.8, reviews:35600, badge:"new",  img:"https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&q=80"},
 ];
 
-// ── MONGO CONFIG ── Backend conectado a MongoDB
 const MONGO_CONFIG = {
-  apiEndpoint: "http://localhost:3000",
+  apiEndpoint: window.location.origin,
   atlasApiKey: null,
   atlasUrl: null,
 };
