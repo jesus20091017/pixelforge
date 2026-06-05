@@ -18,7 +18,22 @@ app.use(express.static(path.join(__dirname, "public")));
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "practica.html"));
 });
+app.get("/health", (req, res) => {
+    res.json({ message: "Servidor funcionando" });
+});
 
+app.get("/producto", async (req, res) => {
+    try {
+        const productos = await db.collection("productos").find({}).toArray();
+        res.json(productos);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.delete("/producto/:id", async (req, res) => {
+    res.json({ mensaje: "Ruta DELETE creada" });
+});
 // ===== MONGO =====
 let db;
 
